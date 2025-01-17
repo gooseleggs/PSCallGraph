@@ -1,0 +1,3 @@
+function included {
+	write-hello
+}
