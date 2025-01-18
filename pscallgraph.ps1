@@ -72,7 +72,7 @@ function Get-ResolvePath {
 	return Join-Path -Path (Split-Path -path $sourcePath) -ChildPath $destPath
 }
 
-function disposeFile {
+function Find-CallGraph {
 <#
 	.SYNOPSIS
 		Reads through a PowerShell script building a call graph
@@ -86,7 +86,7 @@ function disposeFile {
 		The path and file name of the file to be read.  It is assumed to be a .ps1 file
 
 	.EXAMPLE
-		disposeFile -file 'C:\temp\test.ps1'
+		Find-CallGraph -file 'C:\temp\test.ps1'
 
 	.INPUTS
 		String
@@ -174,11 +174,11 @@ function disposeFile {
 				$foundIncludeOperator = $true
 				continue
 		}
-		# If we are signaling an include operator, and this token is a command, try and dispose it
+		# If we are signaling an include operator, and this token is a command, parse the file
 		if ($foundIncludeOperator) {
 			if ($token.Type -eq 'Command') {
 					Write-Output "Found included file $($token.Content) - Disposing"
-					disposeFile -file ( Get-ResolvePath -sourcePath $file -destPath $token.Content)
+					Find-CallGraph -file ( Get-ResolvePath -sourcePath $file -destPath $token.Content)
 					Write-Output "Finished Disposing file $($token.Content)"
 			}
 			$foundIncludeOperator = $false
@@ -220,7 +220,7 @@ function disposeFile {
 
 # iterate through all files provided on the command line
 foreach ($file in ($scriptFile.split(','))) {
-	disposeFile -file $file
+	Find-CallGraph -file $file
 }
 
 # Get the name of the powershell file
